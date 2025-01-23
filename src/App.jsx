@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import { IoMdSend } from "react-icons/io";
@@ -9,31 +9,37 @@ import grey from "./assets/grey.png";
 
 const App = () => {
   const [input, setInput] = useState("");
-  const [answer, setAnswer] = useState(null);
-  const [question, setQuestion] = useState("");
-
+  const [chatHistory, setChatHistory] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
+
+  const chatContainerRef = useRef(null);
 
   const generateAnswer = async () => {
     if (input.trim() === "") return;
 
-    const newQuestion = input;
-    setQuestion(newQuestion);
-    setAnswer("Loading your answer...");
+    const newMessage = { user: "user", text: input };
+    setChatHistory((prev) => [...prev, newMessage]);
     setInput("");
+
+    const loadingMessage = { user: "bot", text: "Loading your answer..." };
+    setChatHistory((prev) => [...prev, loadingMessage]);
 
     try {
       const response = await axios.post(
-        "Enter API Key",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDbkvsEQNW1FFtgT9MPDUsFBJlJJ6PXssQ",
         {
           contents: [{ parts: [{ text: input }] }],
         }
       );
       const result = response.data.candidates[0].content.parts[0].text;
-      setAnswer(result);
+      const botMessage = { user: "bot", text: result };
+      setChatHistory((prev) => [...prev.slice(0, -1), botMessage]);
     } catch (error) {
-      const errorMessage = "Something went wrong. Please try again.";
-      setAnswer(errorMessage);
+      const errorMessage = {
+        user: "bot",
+        text: "Something went wrong. Please try again.",
+      };
+      setChatHistory((prev) => [...prev.slice(0, -1), errorMessage]);
     }
   };
 
@@ -45,6 +51,13 @@ const App = () => {
     setDarkMode(!darkMode);
     document.body.classList.toggle("dark-mode", !darkMode);
   };
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [chatHistory]);
 
   return (
     <div className="app-container">
@@ -61,23 +74,29 @@ const App = () => {
         </div>
       </header>
 
-      <main className="main-content">
-        {question && (
-          <div className="message-user">
-            <p className="user-msg">{question}</p>
-            <FaUserCircle className="user-logo" />
+      <main className="main-content" ref={chatContainerRef}>
+        {chatHistory.map((message, index) => (
+          <div
+            key={index}
+            className={message.user === "user" ? "message-user" : "message-bot"}
+          >
+            {message.user === "user" ? (
+              <>
+                <p className="user-msg">{message.text}</p>
+                <FaUserCircle className="user-logo" />
+              </>
+            ) : (
+              <>
+                <p className="subtitle">{message.text}</p>
+                <img className="logo2" src={grey} alt="Avatar" />
+              </>
+            )}
           </div>
-        )}
-        {answer && (
-          <div className="answer-field">
-            <p className="subtitle">{answer}</p>
-            <img className="logo2" src={grey} alt="Avatar" />
-          </div>
-        )}
+        ))}
       </main>
 
       <footer className="footer">
-        <div className="input-group">
+        <div className="input-group input-section">
           <input
             type="text"
             className="input-field"
