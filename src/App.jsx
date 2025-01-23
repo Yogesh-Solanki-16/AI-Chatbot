@@ -26,7 +26,7 @@ const App = () => {
 
     try {
       const response = await axios.post(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDbkvsEQNW1FFtgT9MPDUsFBJlJJ6PXssQ",
+       "Enter API Key",
         {
           contents: [{ parts: [{ text: input }] }],
         }
