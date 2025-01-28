@@ -6,6 +6,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { BsSun, BsMoon } from "react-icons/bs";
 import axios from "axios";
 import grey from "./assets/grey.png";
+import Markdown from "react-markdown";
 
 const App = () => {
   const [input, setInput] = useState("");
@@ -26,7 +27,7 @@ const App = () => {
 
     try {
       const response = await axios.post(
-       "Enter API Key",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDbkvsEQNW1FFtgT9MPDUsFBJlJJ6PXssQ",
         {
           contents: [{ parts: [{ text: input }] }],
         }
@@ -54,8 +55,10 @@ const App = () => {
 
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
   }, [chatHistory]);
 
@@ -82,12 +85,12 @@ const App = () => {
           >
             {message.user === "user" ? (
               <>
-                <p className="user-msg">{message.text}</p>
+                <p className="user-msg mt-5px">{message.text}</p>
                 <FaUserCircle className="user-logo" />
               </>
             ) : (
               <>
-                <p className="subtitle">{message.text}</p>
+                <Markdown className="subtitle overflow-y-hidden">{message.text}</Markdown>
                 <img className="logo2" src={grey} alt="Avatar" />
               </>
             )}
